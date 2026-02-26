@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/dawsonbooth/predex/compare/seqex-v0.1.1...seqex-v0.2.0) (2026-02-26)
+
+
+### Features
+
+* initial implementation ([100394d](https://github.com/dawsonbooth/predex/commit/100394d51d237efac96ef1d66df594e639949c6c))
+
 ## [0.1.1](https://github.com/dawsonbooth/seqex/compare/seqex-v0.1.0...seqex-v0.1.1) (2026-02-26)
 
 
