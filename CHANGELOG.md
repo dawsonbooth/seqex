@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/dawsonbooth/predex/compare/predex-v0.1.0...predex-v0.1.1) (2026-02-26)
+
+
+### Miscellaneous
+
+* exclude changelog from format check ([c2d6522](https://github.com/dawsonbooth/predex/commit/c2d6522e0eb6b35d9d4e173391a230d78a6c798b))
+
 ## [0.1.0](https://github.com/dawsonbooth/predex/compare/predex-v0.0.1...predex-v0.1.0) (2026-02-26)
 
 
