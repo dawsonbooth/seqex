@@ -1,6 +1,22 @@
 {
   "name": "predex",
   "version": "0.0.1",
+  "description": "Regex-like pattern matching for arbitrary sequences using predicate functions",
+  "keywords": [
+    "matching",
+    "nfa",
+    "pattern",
+    "predicate",
+    "regex",
+    "scanner",
+    "sequence",
+    "streaming"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dawsonbooth/predex.git"
+  },
   "files": [
     "dist"
   ],
@@ -22,6 +38,8 @@
     "build:cjs": "bun build src/index.ts --outdir dist --format cjs --sourcemap=external --entry-naming='[dir]/[name].cjs'",
     "build:types": "tsgo -p tsconfig.build.json",
     "prepublishOnly": "bun run build",
+    "test": "bun test",
+    "test:coverage": "bun test --coverage --coverage-reporter=lcov --coverage-dir=coverage",
     "format": "oxfmt",
     "lint:format": "oxfmt --check",
     "lint:code": "oxlint",

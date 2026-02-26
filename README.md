@@ -1,5 +1,10 @@
 # predex
 
+[![CI](https://github.com/dawsonbooth/predex/actions/workflows/ci.yml/badge.svg)](https://github.com/dawsonbooth/predex/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/predex)](https://www.npmjs.com/package/predex)
+[![codecov](https://codecov.io/gh/dawsonbooth/predex/graph/badge.svg)](https://codecov.io/gh/dawsonbooth/predex)
+[![license](https://img.shields.io/npm/l/predex)](LICENSE)
+
 Regex-like pattern matching for arbitrary sequences. Instead of matching characters against character classes, match elements of any type against predicate functions.
 
 Built on an NFA engine (Thompson's construction) — O(n \* m) guaranteed, no exponential backtracking.
