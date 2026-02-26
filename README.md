@@ -1,9 +1,9 @@
-# predex
+# seqex
 
-[![CI](https://github.com/dawsonbooth/predex/actions/workflows/ci.yml/badge.svg)](https://github.com/dawsonbooth/predex/actions/workflows/ci.yml)
-[![npm](https://img.shields.io/npm/v/predex)](https://www.npmjs.com/package/predex)
-[![codecov](https://codecov.io/gh/dawsonbooth/predex/graph/badge.svg)](https://codecov.io/gh/dawsonbooth/predex)
-[![license](https://img.shields.io/npm/l/predex)](LICENSE)
+[![CI](https://github.com/dawsonbooth/seqex/actions/workflows/ci.yml/badge.svg)](https://github.com/dawsonbooth/seqex/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/seqex)](https://www.npmjs.com/package/seqex)
+[![codecov](https://codecov.io/gh/dawsonbooth/seqex/graph/badge.svg)](https://codecov.io/gh/dawsonbooth/seqex)
+[![license](https://img.shields.io/npm/l/seqex)](LICENSE)
 
 Regex-like pattern matching for arbitrary sequences. Instead of matching characters against character classes, match elements of any type against predicate functions.
 
@@ -12,13 +12,13 @@ Built on an NFA engine (Thompson's construction) — O(n \* m) guaranteed, no ex
 ## Install
 
 ```bash
-bun add predex
+bun add seqex
 ```
 
 ## Quick start
 
 ```typescript
-import { Pattern } from 'predex'
+import { Pattern } from 'seqex'
 
 const isEven = (n: number) => n % 2 === 0
 const isOdd = (n: number) => n % 2 !== 0

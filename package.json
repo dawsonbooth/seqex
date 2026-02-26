@@ -1,5 +1,5 @@
 {
-  "name": "predex",
+  "name": "seqex",
   "version": "0.1.1",
   "description": "Regex-like pattern matching for arbitrary sequences using predicate functions",
   "keywords": [
@@ -15,7 +15,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/dawsonbooth/predex.git"
+    "url": "https://github.com/dawsonbooth/seqex.git"
   },
   "files": [
     "dist"
