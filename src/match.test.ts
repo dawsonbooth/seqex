@@ -82,6 +82,58 @@ describe('Matcher', () => {
       expect(matcher.findAll(new Set([1, 2, 3]))).toEqual([{ start: 1, end: 1, data: [2] }])
     })
 
+    test('findAll with Map', () => {
+      const matcher = Pattern.where<[string, number]>(([, v]) => v % 2 === 0).compile()
+      const map = new Map([
+        ['a', 1],
+        ['b', 2],
+        ['c', 3],
+        ['d', 4],
+      ])
+
+      expect(matcher.findAll(map)).toEqual([
+        { start: 1, end: 1, data: [['b', 2]] },
+        { start: 3, end: 3, data: [['d', 4]] },
+      ])
+    })
+
+    test('findAll with custom iterable', () => {
+      const iterable: Iterable<number> = {
+        [Symbol.iterator]() {
+          let i = 0
+          const values = [1, 2, 3, 4]
+          return {
+            next(): IteratorResult<number> {
+              if (i < values.length) return { value: values[i++], done: false }
+              return { value: undefined, done: true }
+            },
+          }
+        },
+      }
+
+      const matcher = Pattern.where<number>(isEven).compile()
+      expect(matcher.findAll(iterable)).toEqual([
+        { start: 1, end: 1, data: [2] },
+        { start: 3, end: 3, data: [4] },
+      ])
+    })
+
+    test('find() stops consuming iterable early', () => {
+      let yielded = 0
+      function* generate(): Generator<number> {
+        for (const n of [1, 2, 3, 4, 5, 6]) {
+          yielded++
+          yield n
+        }
+      }
+
+      const matcher = Pattern.where<number>(isEven).compile()
+      const result = matcher.find(generate())
+
+      expect(result).toEqual({ start: 1, end: 1, data: [2] })
+      expect(yielded).toBeLessThan(6)
+    })
+
     test('multi-step pattern with generator', () => {
       const matcher = Pattern.where<number>(isEven).followedBy(isOdd).followedBy(isEven).compile()
       const array = [2, 3, 4, 6, 7, 8]

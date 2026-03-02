@@ -98,6 +98,27 @@ describe('Scanner', () => {
       expect(collectAll(matcher, seq)).toEqual(matcher.findAll(seq))
     })
 
+    test('multiple quantifier types combined', () => {
+      const matcher = Pattern.where<number>(isEven)
+        .times(2)
+        .followedBy(isOdd)
+        .oneOrMore()
+        .followedBy(isZero)
+        .optional()
+        .followedBy(isNegative)
+        .compile()
+      const seq = [2, 4, 3, 5, 0, -1, 2, 4, 3, -1]
+
+      expect(collectAll(matcher, seq)).toEqual(matcher.findAll(seq))
+    })
+
+    test('between(0, max) quantifier', () => {
+      const matcher = Pattern.where<number>(isEven).between(0, 2).followedBy(isOdd).compile()
+      const seq = [3, 2, 3, 2, 4, 3]
+
+      expect(collectAll(matcher, seq)).toEqual(matcher.findAll(seq))
+    })
+
     test('complex: quantifier + alternation', () => {
       const matcher = Pattern.where<number>(isPositive)
         .or(Pattern.where<number>(isNegative))

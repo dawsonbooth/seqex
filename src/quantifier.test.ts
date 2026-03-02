@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { Pattern } from './pattern'
-import { isEven, isOdd, isPositive } from './test-predicates'
+import { isEven, isNegative, isOdd, isPositive, isZero } from './test-predicates'
 
 describe('Quantifiers', () => {
   describe('oneOrMore (+)', () => {
@@ -170,6 +170,111 @@ describe('Quantifiers', () => {
         .followedBy(isEven)
         .compile()
       expect(m.findAll([2, 4, 3, 8])).toEqual([{ start: 0, end: 3, data: [2, 4, 3, 8] }])
+    })
+  })
+
+  describe('between edge cases', () => {
+    test('between(0, max) allows zero occurrences', () => {
+      // even{0,2} odd — zero to two evens, then odd
+      const m = Pattern.where<number>(isEven).between(0, 2).followedBy(isOdd).compile()
+
+      expect(m.findAll([3])).toEqual([{ start: 0, end: 0, data: [3] }])
+      expect(m.findAll([2, 3])).toEqual([{ start: 0, end: 1, data: [2, 3] }])
+      expect(m.findAll([2, 4, 3])).toEqual([{ start: 0, end: 2, data: [2, 4, 3] }])
+    })
+
+    test('between(n, n) is equivalent to times(n)', () => {
+      const m1 = Pattern.where<number>(isEven).times(3).compile()
+      const m2 = Pattern.where<number>(isEven).between(3, 3).compile()
+
+      const seq = [2, 4, 6, 8, 1]
+      expect(m1.findAll(seq)).toEqual(m2.findAll(seq))
+    })
+
+    test('between(min, Infinity) is open-ended', () => {
+      const m = Pattern.where<number>(isEven).between(2, Infinity).compile()
+
+      expect(m.findAll([2, 4, 1])).toEqual([{ start: 0, end: 1, data: [2, 4] }])
+      expect(m.findAll([2, 4, 6, 8, 1])).toEqual([{ start: 0, end: 3, data: [2, 4, 6, 8] }])
+      expect(m.findAll([2, 1])).toEqual([])
+    })
+  })
+
+  describe('quantifier combinations', () => {
+    test('multiple quantifier types in one pattern', () => {
+      // even{2} odd+ zero? negative
+      const m = Pattern.where<number>(isEven)
+        .times(2)
+        .followedBy(isOdd)
+        .oneOrMore()
+        .followedBy(isZero)
+        .optional()
+        .followedBy(isNegative)
+        .compile()
+
+      // All parts present
+      expect(m.findAll([2, 4, 3, 5, 0, -1])).toEqual([
+        { start: 0, end: 5, data: [2, 4, 3, 5, 0, -1] },
+      ])
+
+      // Without optional zero
+      expect(m.findAll([2, 4, 3, -1])).toEqual([{ start: 0, end: 3, data: [2, 4, 3, -1] }])
+
+      // Not enough evens
+      expect(m.findAll([2, 3, -1])).toEqual([])
+    })
+
+    test('multiple zeroOrMore in sequence', () => {
+      // even* odd* negative
+      const m = Pattern.where<number>(isEven)
+        .zeroOrMore()
+        .followedBy(isOdd)
+        .zeroOrMore()
+        .followedBy(isNegative)
+        .compile()
+
+      expect(m.findAll([2, 4, 3, 5, -1])).toEqual([{ start: 0, end: 4, data: [2, 4, 3, 5, -1] }])
+      // Zero odds
+      expect(m.findAll([2, 4, -1])).toEqual([{ start: 0, end: 2, data: [2, 4, -1] }])
+      // Zero evens
+      expect(m.findAll([3, 5, -1])).toEqual([{ start: 0, end: 2, data: [3, 5, -1] }])
+      // Both zero
+      expect(m.findAll([-1])).toEqual([{ start: 0, end: 0, data: [-1] }])
+    })
+
+    test('quantifiers + wildcards + anchors combined', () => {
+      // odd+ any{3} even{2} $
+      const m = Pattern.where<number>(isOdd)
+        .oneOrMore()
+        .followedByAny()
+        .times(3)
+        .followedBy(isEven)
+        .times(2)
+        .atEnd()
+        .compile()
+
+      expect(m.findAll([1, 3, 5, 7, 8, 2, 4])).toEqual([
+        { start: 0, end: 6, data: [1, 3, 5, 7, 8, 2, 4] },
+      ])
+      // Last element not even — no match
+      expect(m.findAll([1, 3, 5, 7, 8, 2, 3])).toEqual([])
+      // Not enough elements
+      expect(m.findAll([1, 2, 3, 4, 6])).toEqual([])
+    })
+
+    test('multiple consecutive optionals', () => {
+      // even? odd? zero
+      const m = Pattern.where<number>(isEven)
+        .optional()
+        .followedBy(isOdd)
+        .optional()
+        .followedBy(isZero)
+        .compile()
+
+      expect(m.findAll([2, 3, 0])).toEqual([{ start: 0, end: 2, data: [2, 3, 0] }])
+      expect(m.findAll([2, 0])).toEqual([{ start: 0, end: 1, data: [2, 0] }])
+      expect(m.findAll([3, 0])).toEqual([{ start: 0, end: 1, data: [3, 0] }])
+      expect(m.findAll([0])).toEqual([{ start: 0, end: 0, data: [0] }])
     })
   })
 

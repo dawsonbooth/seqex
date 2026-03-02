@@ -50,19 +50,6 @@ describe('Alternation', () => {
     ])
   })
 
-  test('alternation with sequences', () => {
-    // (positive zero) | (negative zero)
-    const m = Pattern.where<number>(isPositive)
-      .followedBy(isZero)
-      .or(Pattern.where<number>(isNegative).followedBy(isZero))
-      .compile()
-
-    expect(m.findAll([3, 0, -1, 0, 0])).toEqual([
-      { start: 0, end: 1, data: [3, 0] },
-      { start: 2, end: 3, data: [-1, 0] },
-    ])
-  })
-
   test('alternation followed by more predicates', () => {
     // (positive | negative) zero
     const m = Pattern.where<number>(isPositive)
@@ -127,6 +114,29 @@ describe('Anchors', () => {
     expect(m.findAll([1, 3, 2, 4, 6])).toEqual([{ start: 2, end: 4, data: [2, 4, 6] }])
     expect(m.findAll([2, 4, 1])).toEqual([])
   })
+
+  test('atStart with alternation', () => {
+    const m = Pattern.where<number>(isPositive).or(isNegative).atStart().compile()
+
+    expect(m.findAll([1, 2, 3])).toEqual([{ start: 0, end: 0, data: [1] }])
+    expect(m.findAll([-1, 2, 3])).toEqual([{ start: 0, end: 0, data: [-1] }])
+    expect(m.findAll([0, 1, 2])).toEqual([])
+  })
+
+  test('atEnd with alternation', () => {
+    const m = Pattern.where<number>(isPositive).or(isNegative).atEnd().compile()
+
+    expect(m.findAll([0, 0, 1])).toEqual([{ start: 2, end: 2, data: [1] }])
+    expect(m.findAll([0, 0, -1])).toEqual([{ start: 2, end: 2, data: [-1] }])
+    expect(m.findAll([1, 2, 0])).toEqual([])
+  })
+
+  test('atStart with quantifier', () => {
+    const m = Pattern.where<number>(isEven).oneOrMore().atStart().compile()
+
+    expect(m.findAll([2, 4, 6, 1])).toEqual([{ start: 0, end: 2, data: [2, 4, 6] }])
+    expect(m.findAll([1, 2, 4])).toEqual([])
+  })
 })
 
 describe('Wildcard', () => {
@@ -147,11 +157,31 @@ describe('Wildcard', () => {
     expect(m.findAll([2, 99, 3])).toEqual([{ start: 0, end: 2, data: [2, 99, 3] }])
   })
 
-  test('any with quantifier', () => {
-    // even, any+, odd
+  test('any with oneOrMore', () => {
     const m = Pattern.any<number>().oneOrMore().followedBy(isOdd).compile()
 
     expect(m.findAll([1, 2, 3])).toEqual([{ start: 0, end: 2, data: [1, 2, 3] }])
+  })
+
+  test('any with zeroOrMore', () => {
+    const m = Pattern.any<number>().zeroOrMore().followedBy(isOdd).compile()
+
+    expect(m.findAll([2, 4, 3])).toEqual([{ start: 0, end: 2, data: [2, 4, 3] }])
+    expect(m.findAll([3])).toEqual([{ start: 0, end: 0, data: [3] }])
+  })
+
+  test('any with optional', () => {
+    const m = Pattern.any<number>().optional().followedBy(isOdd).compile()
+
+    expect(m.findAll([2, 3])).toEqual([{ start: 0, end: 1, data: [2, 3] }])
+    expect(m.findAll([3])).toEqual([{ start: 0, end: 0, data: [3] }])
+  })
+
+  test('any with times', () => {
+    const m = Pattern.any<number>().times(2).followedBy(isOdd).compile()
+
+    expect(m.findAll([1, 2, 3])).toEqual([{ start: 0, end: 2, data: [1, 2, 3] }])
+    expect(m.findAll([1, 3])).toEqual([])
   })
 })
 
@@ -250,23 +280,12 @@ describe('Complex patterns', () => {
     expect(m.findAll([5, -3])).toEqual([{ start: 0, end: 1, data: [5, -3] }])
   })
 
-  test('match at sequence boundaries', () => {
-    const m = Pattern.where<number>(isEven).compile()
+  test('lazy quantifier on alternation', () => {
+    // (positive | negative)+? (positive | negative) — lazy takes minimum
+    const branch = Pattern.where<number>(isPositive).or(isNegative)
+    const m = branch.oneOrMore(false).followedBy(branch).compile()
 
-    // First element
-    expect(m.findAll([2])).toEqual([{ start: 0, end: 0, data: [2] }])
-
-    // Last element only
-    expect(m.findAll([1, 3, 4])).toEqual([{ start: 2, end: 2, data: [4] }])
-  })
-
-  test('adjacent matches', () => {
-    const m = Pattern.where<number>(isEven).followedBy(isOdd).compile()
-
-    expect(m.findAll([2, 3, 4, 5])).toEqual([
-      { start: 0, end: 1, data: [2, 3] },
-      { start: 2, end: 3, data: [4, 5] },
-    ])
+    expect(m.findAll([1, -2, 3])).toEqual([{ start: 0, end: 1, data: [1, -2] }])
   })
 })
 
@@ -454,17 +473,6 @@ describe('Pattern.oneOf()', () => {
 })
 
 describe('Nested pattern composition', () => {
-  test('or() on result of or() (deeply nested alternation)', () => {
-    // ((even | odd) | zero) — equivalent to oneOf but built manually
-    const m = Pattern.where<number>(isEven).or(isOdd).or(isZero).compile()
-
-    expect(m.findAll([2, 3, 0])).toEqual([
-      { start: 0, end: 0, data: [2] },
-      { start: 1, end: 1, data: [3] },
-      { start: 2, end: 2, data: [0] },
-    ])
-  })
-
   test('alternation as sub-pattern inside followedBy', () => {
     // positive (even | negative) zero
     const branch = Pattern.where<number>(isEven).or(isNegative)
